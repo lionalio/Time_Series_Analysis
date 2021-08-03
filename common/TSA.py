@@ -26,7 +26,7 @@ class TimeSeriesAnalysis(DataPreparation):
         X_train = self.get_windowed_data(self.data_train[col], window)
         y_train = np.array([self.data_train[col][i] for i in range(window, len(self.data_train[col]))])
         X_train = self.convert_to_lstm_format(X_train)
-        model = model_lstm(input_shape=X_train.shape[1])
+        model = model_lstm(input_shape=(X_train.shape[1], 1))
         model.fit(X_train, y_train, epochs=10, batch_size=16, verbose=1)
 
         # Testing phase
@@ -43,6 +43,7 @@ class TimeSeriesAnalysis(DataPreparation):
         valid_data = self.data_test
         valid_data['predictions'] = preds
         valid_data[col] = self.methods['scaler'].inverse_transform(self.data_test[col].values.reshape(-1, 1))[:, 0]
+        print(valid_data)
         plt.plot(train_data[col])
         plt.plot(valid_data[[col,"predictions"]])
         plt.show()

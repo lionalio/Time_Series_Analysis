@@ -17,6 +17,9 @@ from sklearn.pipeline import Pipeline
 
 import matplotlib
 
+# Time series packages
+from pyts.preprocessing import InterpolationImputer
+
 # Deep Learning
 from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import LearningRateScheduler
