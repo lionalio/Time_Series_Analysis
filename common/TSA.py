@@ -21,6 +21,45 @@ class TimeSeriesAnalysis(DataPreparation):
         
         return out
 
+    def split_series(self, data, n_past, n_future):
+        # n_past: number of past observations
+        # n_future: number of future observations
+        X, y = [], []
+        for w in range(len(data)):
+            past_end = w + n_past
+            future_end = past_end + n_future
+            if future_end > len(series):
+                break
+            past, future = data[w:past_end, :], data[past_end:future_end, :]
+            X.append(past)
+            y.append(future)
+
+        return np.array(X), np.array(y)
+
+    def build_model_multistep_DL(self, n_past, n_future, method='LSTM'):
+        # prepare data
+        train_X, train_y = self.split_series(self.data_train, n_past, n_future)
+        timesteps, features, outputs = train_X.shape[1], train_X.shape[2], train_X.shape[1]
+        if method == 'LSTM':
+            verbose, epochs, batch_size=0, 70, 16
+            model = model_lstm(input_shape=(timesteps, features))
+            model.fit(train_X, train_y, epochs=epochs, batch_size=batch_size, verbose=verbose)
+        elif method == 'LGB':
+            train_X = train_X.reshape(train_X.shape[0], timesteps*features)
+            model = XGBRegressor()
+            model.fit(train_X, train_y)
+            
+        return model
+
+    def evaluation(self, model, n_past, n_future, method='LSTM'):
+        test_X, test_y = self.split_series(self.data_test, n_past, n_future)
+        if method != 'LSTM':
+            test_X = test_X.reshape(train_X.shape[0], timesteps*features)
+        forecast = model.predict(test_X)
+        # create a list random indexes in forecast data
+        # get the actual and forecast data from those indexes
+        # get the evaluation metrics on that comparison       
+    
     def predict_single_instance(self, colx, coly, window=60):
         # Training phase
         X_train = self.get_windowed_data(self.data_train[colx], window)
